@@ -22,6 +22,13 @@ type Context struct {
 
 	// 写保护机制
 	writerMux *sync.RWMutex
+
+	// 在中间件注册的回调函数中，只有 framework.Context 这个数据结构作为参数，所以在 Context 中也需要保存这个控制器链路 (handlers)，
+	// 并且要记录下当前执行到了哪个控制器（index）
+	// 当前请求的 handler 链条
+	handlers []ControllerHandler
+	// 当前请求调用到链条的哪个节点
+	index int
 }
 
 // NewContext 构造函数
@@ -31,7 +38,22 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		responseWriter: w,
 		hasTimeout:     false,
 		writerMux:      &sync.RWMutex{},
+		index:          -1,
 	}
+}
+func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
+	ctx.handlers = handlers
+}
+
+// 执行handler
+func (ctx *Context) Next() error {
+	ctx.index++
+	for ctx.index <= len(ctx.handlers) {
+		if err := ctx.handlers[ctx.index](ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (ctx *Context) BaseContext() context.Context {

@@ -22,19 +22,19 @@ func NewTree() *Tree {
 }
 
 // FindHandler 匹配路由
-func (tree *Tree) FindHandler(uri string) ControllerHandler {
+func (tree *Tree) FindHandler(uri string) []ControllerHandler {
 	matchNode := tree.root.matchNode(uri)
 	if matchNode == nil {
 		return nil
 	}
-	return matchNode.handler
+	return matchNode.handlers
 }
 
 // AddRouter 添加路由，需要确认路由是否冲突。
 // 我们先检查要增加的路由规则是否在树中已经有可以匹配的节点了。如果有的话，代表当前待增加的路由和已有路由存在冲突（ 我们用到了刚刚定义的 matchNode ）
 // eg：/user/name ，/user/:id 这两个路由就是冲突的
 // AddRouter 可以实现递归版本
-func (tree *Tree) AddRouter(uri string, handler ControllerHandler) error {
+func (tree *Tree) AddRouter(uri string, handler []ControllerHandler) error {
 	n := tree.root
 	// 避免路由冲突
 	if n.matchNode(uri) != nil {
@@ -64,7 +64,7 @@ func (tree *Tree) AddRouter(uri string, handler ControllerHandler) error {
 			objNode.segment = segment
 			if isLast {
 				objNode.isLast = isLast
-				objNode.handler = handler
+				objNode.handlers = handler
 			}
 			// 将新建的节点添加到当前的节点孩子中
 			n.children = append(children, objNode)
@@ -82,10 +82,10 @@ func (tree *Tree) AddRouterRecurrence(uri string, handler ControllerHandler) err
 
 type node struct {
 	// isLast 用于区别这个树中的节点是否有实际的路由含义
-	isLast   bool              // 代表这个节点是否可以成为最终的路由规则。该节点是否能成为一个独立的uri, 是否自身就是一个终极节点
-	segment  string            // uri中的字符串，代表这个节点表示的路由中某个段的字符串
-	handler  ControllerHandler // 代表这个节点中包含的控制器，用于最终加载调用
-	children []*node           // 代表这个节点下的子节点
+	isLast   bool                // 代表这个节点是否可以成为最终的路由规则。该节点是否能成为一个独立的uri, 是否自身就是一个终极节点
+	segment  string              // uri中的字符串，代表这个节点表示的路由中某个段的字符串
+	handlers []ControllerHandler // 代表这个节点中包含的控制器，用于最终加载调用
+	children []*node             // 代表这个节点下的子节点
 }
 
 func newNode() *node {

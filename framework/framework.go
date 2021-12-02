@@ -1,7 +1,6 @@
 package framework
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -15,6 +14,8 @@ type Core struct {
 
 	// router 为了支持动态路由，将二级map替换成字典树
 	router map[string]*Tree
+
+	middlewares []ControllerHandler
 }
 
 // NewCore 初始化框架核心结构
@@ -39,45 +40,62 @@ func NewCore() *Core {
 	}
 }
 
+// Use 设置中间件
+func (c *Core) Use(middlewares ...ControllerHandler) {
+	c.middlewares = append(c.middlewares, middlewares...)
+}
+
 // Group 路由分组，批量通用前缀
 func (c *Core) Group(prefix string) IGroup {
 	return NewGroup(c, prefix)
 }
 
+// combineHandlers 做合并操作，防止切片使用公共的底层数组，具体可以看 Group 的 combineHandlers 函数
+func (c *Core) combineHandlers(handlers ...ControllerHandler) []ControllerHandler {
+	finishIndex := len(c.middlewares) + len(handlers)
+	mergeHandlers := make([]ControllerHandler, finishIndex)
+	copy(mergeHandlers, c.middlewares)
+	copy(mergeHandlers[len(c.middlewares):], handlers)
+	return mergeHandlers
+}
+
 // Get get请求的路由注册
-func (c *Core) Get(uri string, handler ControllerHandler) {
+func (c *Core) Get(uri string, handler ...ControllerHandler) {
 	// 注册的时候将URL全部大写，在匹配的时候也需要转成大写匹配。这样子实现的路由就是"大小写不敏感"的，对使用者的容错率增加
 	//upperUri := strings.ToUpper(uri)
 	//c.router["GET"][upperUri] = handler
-	fmt.Println(uri)
-	if err := c.router["GET"].AddRouter(uri, handler); err != nil {
+	allHandlers := c.combineHandlers(handler...)
+	if err := c.router["GET"].AddRouter(uri, allHandlers); err != nil {
 		log.Fatal("add router error：", err)
 	}
 }
 
 // Post post请求的路由注册
-func (c *Core) Post(uri string, handler ControllerHandler) {
-	if err := c.router["POST"].AddRouter(uri, handler); err != nil {
+func (c *Core) Post(uri string, handler ...ControllerHandler) {
+	allHandlers := c.combineHandlers(handler...)
+	if err := c.router["POST"].AddRouter(uri, allHandlers); err != nil {
 		log.Fatal("add router error：", err)
 	}
 }
 
 // Put put请求的路由注册
-func (c *Core) Put(uri string, handler ControllerHandler) {
-	if err := c.router["PUT"].AddRouter(uri, handler); err != nil {
+func (c *Core) Put(uri string, handler ...ControllerHandler) {
+	allHandlers := c.combineHandlers(handler...)
+	if err := c.router["PUT"].AddRouter(uri, allHandlers); err != nil {
 		log.Fatal("add router error：", err)
 	}
 }
 
 // Delete delete请求的路由注册
-func (c *Core) Delete(uri string, handler ControllerHandler) {
-	if err := c.router["DELETE"].AddRouter(uri, handler); err != nil {
+func (c *Core) Delete(uri string, handler ...ControllerHandler) {
+	allHandlers := c.combineHandlers(handler...)
+	if err := c.router["DELETE"].AddRouter(uri, allHandlers); err != nil {
 		log.Fatal("add router error：", err)
 	}
 }
 
 // MatchRouter 匹配路由
-func (c *Core) MatchRouter(request *http.Request) ControllerHandler {
+func (c *Core) MatchRouter(request *http.Request) []ControllerHandler {
 	upperMethod := strings.ToUpper(request.Method)
 	uri := request.URL.Path
 
@@ -99,9 +117,11 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		_ = ctx.Json(404, "not found")
 		return
 	}
-	err := handler(ctx)
-	if err != nil {
+	ctx.SetHandlers(handler)
+
+	if err := ctx.Next(); err != nil {
 		_ = ctx.Json(500, "inner error")
 		return
 	}
+
 }
