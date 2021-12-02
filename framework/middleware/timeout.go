@@ -15,6 +15,7 @@ func TimeoutHandler(d time.Duration) framework.ControllerHandler {
 		durationCtx, cancel := context.WithTimeout(ctx.BaseContext(), d)
 		defer cancel()
 
+		// 将新的context设置到request中
 		ctx.SetRequest(ctx.Request().Clone(durationCtx))
 
 		finishChan := make(chan struct{}, 1)
@@ -37,7 +38,7 @@ func TimeoutHandler(d time.Duration) framework.ControllerHandler {
 		case <-durationCtx.Done():
 			log.Printf("request timeout")
 			ctx.WriterMux().Lock()
-			ctx.WriterMux().Unlock()
+			defer ctx.WriterMux().Unlock()
 			ctx.SetHasTimeout()
 			_ = ctx.Json(500, "request timeout")
 		}
@@ -84,7 +85,7 @@ func TimeoutHandlerV1(f framework.ControllerHandler, d time.Duration) framework.
 			fmt.Println("finish")
 		case <-durationCtx.Done():
 			ctx.WriterMux().Lock()
-			ctx.WriterMux().Unlock()
+			defer ctx.WriterMux().Unlock()
 			ctx.SetHasTimeout()
 			_ = ctx.Json(500, "time out")
 		}
