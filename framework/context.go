@@ -41,8 +41,15 @@ func NewContext(w http.ResponseWriter, r *http.Request) *Context {
 		index:          -1,
 	}
 }
+
+func (ctx *Context) Request() *http.Request {
+	return ctx.request
+}
 func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
 	ctx.handlers = handlers
+}
+func (ctx *Context) SetRequest(request *http.Request) {
+	ctx.request = request
 }
 
 // 执行handler
@@ -78,13 +85,8 @@ func (ctx *Context) Value(key interface{}) interface{} {
 	return ctx.BaseContext().Value(key)
 }
 
-// GetRequest 获取请求实例
-func (ctx *Context) GetRequest() *http.Request {
-	return ctx.request
-}
-
 // 获取响应实例
-func (ctx *Context) GetResponse() http.ResponseWriter {
+func (ctx *Context) Response() http.ResponseWriter {
 	return ctx.responseWriter
 }
 

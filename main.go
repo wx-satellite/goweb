@@ -14,3 +14,16 @@ func main() {
 	}
 	panic(server.ListenAndServe())
 }
+
+//func main() {
+//	http.HandleFunc("/haha", func(writer http.ResponseWriter, request *http.Request) {
+//		fmt.Println(request.RequestURI)
+//		fmt.Println(request.URL.Path)
+//		panic("123")
+//	})
+//	http.HandleFunc("/name", func(writer http.ResponseWriter, request *http.Request) {
+//		fmt.Println(request.RequestURI)
+//		fmt.Println(request.URL.Path)
+//	})
+//	http.ListenAndServe(":8080", nil)
+//}
