@@ -95,7 +95,7 @@ func (c *Core) Delete(uri string, handler ...ControllerHandler) {
 }
 
 // MatchRouter 匹配路由
-func (c *Core) MatchRouter(request *http.Request) []ControllerHandler {
+func (c *Core) MatchNode(request *http.Request) *node {
 	upperMethod := strings.ToUpper(request.Method)
 	uri := request.URL.Path
 
@@ -103,7 +103,7 @@ func (c *Core) MatchRouter(request *http.Request) []ControllerHandler {
 	if !ok {
 		return nil
 	}
-	return tree.FindHandler(uri)
+	return tree.root.matchNode(uri)
 }
 
 // ServeHTTP 实现 Handler 接口
@@ -112,12 +112,17 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ctx := NewContext(w, r)
 
-	handler := c.MatchRouter(r)
-	if handler == nil {
+	// 匹配 node
+	node := c.MatchNode(r)
+	if node == nil {
 		_ = ctx.Json(404, "not found")
 		return
 	}
-	ctx.SetHandlers(handler)
+
+	// 设置句柄
+	ctx.SetHandlers(node.handlers)
+	// 设置路由参数
+	ctx.SetParams(node.parseParamsFromEndNode(r.URL.Path))
 
 	if err := ctx.Next(); err != nil {
 		_ = ctx.Json(500, "inner error")

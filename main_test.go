@@ -18,4 +18,6 @@ func Test(t *testing.T) {
 	fmt.Println(s)
 	fmt.Println(s1)
 	fmt.Println(s2)
+
+	fmt.Println(1 << 20)
 }

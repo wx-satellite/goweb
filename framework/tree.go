@@ -66,6 +66,8 @@ func (tree *Tree) AddRouter(uri string, handler []ControllerHandler) error {
 				objNode.isLast = isLast
 				objNode.handlers = handler
 			}
+			// 将节点的parent指向父节点
+			objNode.parent = n
 			// 将新建的节点添加到当前的节点孩子中
 			n.children = append(children, objNode)
 		}
@@ -86,6 +88,11 @@ type node struct {
 	segment  string              // uri中的字符串，代表这个节点表示的路由中某个段的字符串
 	handlers []ControllerHandler // 代表这个节点中包含的控制器，用于最终加载调用
 	children []*node             // 代表这个节点下的子节点
+
+	// 构建双向链表的目的是为了追溯完整的匹配路径。目前匹配路由的逻辑只是拿到了最后的节点，但是因为要获取路由参数，例如：
+	// /user/:id/article --> /user/2/article 即 id 为 2，为了达到这个效果，我们需要找出这个匹配路径，然后查找出其中的通配符节点，
+	// 再和请求 URI 对应，获取这些通配符参数
+	parent *node // 父节点，双向链表
 }
 
 func newNode() *node {
@@ -155,4 +162,26 @@ func (n *node) matchNode(uri string) *node {
 		return child.matchNode(segments[1])
 	}
 	return nil
+}
+
+// parseParamsFromEndNode node节点实现了双向链表，因为可以复原出完整的匹配路径，再配合uri就可以解析出路由参数
+func (n *node) parseParamsFromEndNode(uri string) map[string]string {
+	res := map[string]string{}
+	segments := strings.Split(uri, "/")
+	cur := n
+
+	// 从最后一个节点开始向前匹配
+	for i := len(segments) - 1; i >= 0; i-- {
+		if cur.segment == "" {
+			break
+		}
+		// 如果是通配符
+		if isWildSegment(cur.segment) {
+			res[strings.Trim(cur.segment, ":")] = segments[i]
+		}
+
+		// 找父节点
+		cur = cur.parent
+	}
+	return res
 }

@@ -1,13 +1,9 @@
 package framework
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
-	"io/ioutil"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -29,6 +25,9 @@ type Context struct {
 	handlers []ControllerHandler
 	// 当前请求调用到链条的哪个节点
 	index int
+
+	// 存放解析之后的路由参数
+	params map[string]string
 }
 
 // NewContext 构造函数
@@ -50,6 +49,13 @@ func (ctx *Context) SetHandlers(handlers []ControllerHandler) {
 }
 func (ctx *Context) SetRequest(request *http.Request) {
 	ctx.request = request
+}
+
+func (ctx *Context) SetParams(params map[string]string) {
+	ctx.params = params
+}
+func (ctx *Context) Params() map[string]string {
+	return ctx.params
 }
 
 // 执行handler
@@ -106,30 +112,6 @@ func (ctx *Context) WriterMux() *sync.RWMutex {
 	return ctx.writerMux
 }
 
-// QueryInt 获取指定key的GET参数的int类型，以最后一个为准，例如：age=12&age=24 --> 24
-func (ctx *Context) QueryInt(key string, def int) int {
-	params := ctx.QueryAll()
-	val, ok := params[key]
-	if !ok || len(val) <= 0 {
-		return def
-	}
-	intVal, err := strconv.Atoi(val[len(val)-1])
-	if err != nil {
-		return def
-	}
-	return intVal
-}
-
-// QueryString 获取指定key的GET参数，以最后一个为准，例如：name=ha&name=xi --> xi
-func (ctx *Context) QueryString(key, def string) string {
-	params := ctx.QueryAll()
-	val, ok := params[key]
-	if !ok || len(val) <= 0 {
-		return def
-	}
-	return val[len(val)-1]
-}
-
 // QueryKey 获取指定key的GET参数，返回切片，例如：name=ha&name=xi --> []string{"ha","xi"}
 func (ctx *Context) QueryKey(key string, def []string) []string {
 	params := ctx.QueryAll()
@@ -139,39 +121,6 @@ func (ctx *Context) QueryKey(key string, def []string) []string {
 	return def
 }
 
-// QueryAll 获取所有GET参数
-func (ctx *Context) QueryAll() map[string][]string {
-	if ctx.request == nil {
-		return map[string][]string{}
-	}
-	return ctx.request.URL.Query()
-}
-
-// FormInt 获取指定key的POST参数，多个值的时候只返回最后一个，并转成数字类型
-func (ctx *Context) FormInt(key string, def int) int {
-	res := ctx.FormAll()
-	val, ok := res[key]
-	if !ok || len(val) <= 0 {
-		return def
-	}
-	intVal, err := strconv.Atoi(val[len(val)-1])
-	if err != nil {
-		return def
-	}
-	return intVal
-}
-
-// FormString 获取指定key的POST参数，多个值的时候只返回最后一个
-func (ctx *Context) FormString(key, def string) string {
-	res := ctx.FormAll()
-	val, ok := res[key]
-	if !ok || len(val) <= 0 {
-		return def
-	}
-	return val[len(val)-1]
-
-}
-
 // FormKey 获取指定key的POST参数，多个值的时候返回切片
 func (ctx *Context) FormKey(key string, def []string) []string {
 	res := ctx.FormAll()
@@ -179,32 +128,6 @@ func (ctx *Context) FormKey(key string, def []string) []string {
 		return val
 	}
 	return def
-}
-
-// FormAll 获取所有的POST参数
-func (ctx *Context) FormAll() map[string][]string {
-	if ctx.request == nil {
-		return map[string][]string{}
-	}
-	// Form：存储了 post、put 和 get 参数，在使用之前需要调用 ParseForm 方法。
-	// PostForm：存储了 post、put 参数，在使用之前需要调用 ParseForm 方法。
-	_ = ctx.request.ParseForm()
-	return ctx.request.PostForm
-}
-
-// BindJson 绑定json数据到结构体中
-func (ctx *Context) BindJson(obj interface{}) error {
-	if ctx.request == nil {
-		return errors.New("ctx.request body empty")
-	}
-	body, err := ioutil.ReadAll(ctx.request.Body)
-	if err != nil {
-		return err
-	}
-	// io 只能读取一次，所以这里为了不影响后续Body的读取使用NopCloser
-	ctx.request.Body = ioutil.NopCloser(bytes.NewBuffer(body))
-	err = json.Unmarshal(body, obj)
-	return err
 }
 
 // Json 返回json格式的响应体
