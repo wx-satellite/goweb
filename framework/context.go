@@ -2,7 +2,6 @@ package framework
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
@@ -130,29 +129,7 @@ func (ctx *Context) FormKey(key string, def []string) []string {
 	return def
 }
 
-// Json 返回json格式的响应体
-func (ctx *Context) Json(status int, obj interface{}) error {
-	// 当超时的时候会往response中写入数据，并且设置 hasTimeout true
-	// 如果 hasTimeout 为 true 则表示已经向 response 写入了数据，这里就直接return
-	if ctx.HasTimeout() {
-		return nil
-	}
-	ctx.responseWriter.Header().Set("Content-Type", "application/json")
-	ctx.responseWriter.WriteHeader(status)
-	byt, err := json.Marshal(obj)
-	if err != nil {
-		return err
-	}
-	_, err = ctx.responseWriter.Write(byt)
-	return err
-}
-
 // HTML 返回网页信息
 func (ctx *Context) HTML(status int, obj interface{}, template string) error {
-	return nil
-}
-
-// Text 返回文本信息
-func (ctx *Context) Text(status int, obj string) error {
 	return nil
 }

@@ -115,7 +115,7 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// 匹配 node
 	node := c.MatchNode(r)
 	if node == nil {
-		_ = ctx.Json(404, "not found")
+		ctx.SetStatus(http.StatusNotFound).Text("page not found")
 		return
 	}
 
@@ -125,7 +125,7 @@ func (c *Core) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx.SetParams(node.parseParamsFromEndNode(r.URL.Path))
 
 	if err := ctx.Next(); err != nil {
-		_ = ctx.Json(500, "inner error")
+		ctx.SetStatus(http.StatusInternalServerError).Text(err.Error())
 		return
 	}
 
