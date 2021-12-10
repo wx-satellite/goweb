@@ -26,7 +26,7 @@ func FooControllerHandler(ctx *framework.Context) error {
 		}()
 		// time.Sleep 来模拟具体业务逻辑的处理时间
 		time.Sleep(10 * time.Second)
-		_ = ctx.Json(200, "ok")
+		_ = ctx.Json(200)
 		// 通过 finish 通道告知父goroutine处理结束
 		finish <- struct{}{}
 	}()
@@ -38,14 +38,14 @@ func FooControllerHandler(ctx *framework.Context) error {
 		log.Println("请求异常了", p)
 		ctx.WriterMux().Lock()
 		defer ctx.WriterMux().Unlock()
-		_ = ctx.Json(500, "panic")
+		_ = ctx.Json(500)
 	case <-finish: // 监听结束
-		_ = ctx.Json(200, "请求正常响应")
+		_ = ctx.Json(200)
 	case <-durationCtx.Done(): // 监听超时
 		log.Println("请求超时了")
 		ctx.WriterMux().Lock()
 		defer ctx.WriterMux().Unlock()
-		_ = ctx.Json(500, "time out")
+		_ = ctx.Json(500)
 		ctx.SetHasTimeout()
 	}
 	return nil

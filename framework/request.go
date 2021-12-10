@@ -9,6 +9,13 @@ import (
 	"mime/multipart"
 )
 
+/*
+对比我们自己的query方法和gin的query差别：
+	gin的query方法，通过本地内存cache缓存了请求的query参数。后续每次读query参数时，都会从内存中直接读，
+减少了每次都要调用request.Query()方法的开销。
+
+gin 有很多实现细节值得我们学习和拜读！
+*/
 const defaultMultipartMemory = 32 << 20 // 32MB
 // IRequest 将 request 相关的功能声明成接口
 // 关于接口：对于比较完整的功能模块，先定义接口再具体实现。一个清晰的接口可以让使用者非常清楚，这个功能

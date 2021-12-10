@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+var (
+	_ IResponse       = (*Context)(nil)
+	_ IRequest        = (*Context)(nil)
+	_ context.Context = (*Context)(nil)
+)
+
 // Context 基于 request 的 Context 进行了封装（ 自定义 Context 结构封装了 net/http 标准库主逻辑流程产生的 Context ）
 type Context struct {
 	request        *http.Request

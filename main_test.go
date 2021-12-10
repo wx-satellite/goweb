@@ -1,23 +1,20 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httputil"
+	"strings"
 	"testing"
 )
 
 func Test(t *testing.T) {
-	s := make([]int64, 0, 4)
-	s = append(s, 1, 2)
-
-	s1 := append(s, 3)
-
-	fmt.Println(s)
-	fmt.Println(s1)
-
-	s2 := append(s, 4)
-	fmt.Println(s)
-	fmt.Println(s1)
-	fmt.Println(s2)
-
-	fmt.Println(1 << 20)
+	bs, _ := json.Marshal(map[string]string{"name": "bob", "age": "12"})
+	request, _ := http.NewRequest("POST", "http://www.baidu.com", bytes.NewBuffer(bs))
+	httpRequest, _ := httputil.DumpRequest(request, true)
+	fmt.Println(string(httpRequest))
+	headers := strings.Split(string(httpRequest), "\r\n")
+	fmt.Println(headers)
 }

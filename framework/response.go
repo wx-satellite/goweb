@@ -132,6 +132,10 @@ func (ctx *Context) Jsonp(obj interface{}) IResponse {
 	callbackFunc, _ := ctx.QueryString("callback", "callback_function")
 	ctx.SetHeader("Content-Type", "application/javascript")
 
+	//输出到前端页面的时候需要注意下进行字符过滤，否则有可能造成 XSS 攻击
+	// callbackFunc 是前端传递的，有可能包含js代码
+	callbackFunc = template.JSEscapeString(callbackFunc)
+
 	// 输出函数名
 	_, err := ctx.Response().Write([]byte(callbackFunc))
 	if err != nil {
