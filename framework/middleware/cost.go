@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"goweb/framework"
+	"github.com/wxsatellite/goweb/framework"
 	"log"
 	"time"
 )

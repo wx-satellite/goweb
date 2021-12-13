@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"goweb/framework"
+	"github.com/wxsatellite/goweb/framework"
 	"log"
 	"net/http"
 	"os"
