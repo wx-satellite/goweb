@@ -33,14 +33,14 @@ func TimeoutHandler(d time.Duration) framework.ControllerHandler {
 		select {
 		case p := <-panicChan:
 			log.Printf("request error：%v", p)
-			_ = ctx.Json(500, "request error")
+			_ = ctx.Json(500)
 		case <-finishChan:
 		case <-durationCtx.Done():
 			log.Printf("request timeout")
 			ctx.WriterMux().Lock()
 			defer ctx.WriterMux().Unlock()
 			ctx.SetHasTimeout()
-			_ = ctx.Json(500, "request timeout")
+			_ = ctx.Json(500)
 		}
 
 		return nil
@@ -80,14 +80,14 @@ func TimeoutHandlerV1(f framework.ControllerHandler, d time.Duration) framework.
 		select {
 		case p := <-panicChan:
 			log.Println(p)
-			_ = ctx.Json(500, "server error")
+			_ = ctx.Json(500)
 		case <-finish:
 			fmt.Println("finish")
 		case <-durationCtx.Done():
 			ctx.WriterMux().Lock()
 			defer ctx.WriterMux().Unlock()
 			ctx.SetHasTimeout()
-			_ = ctx.Json(500, "time out")
+			_ = ctx.Json(500)
 		}
 		return nil
 	}
