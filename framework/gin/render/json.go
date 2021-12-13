@@ -10,8 +10,8 @@ import (
 	"html/template"
 	"net/http"
 
-	"github.com/gin-gonic/gin/internal/bytesconv"
-	"github.com/gin-gonic/gin/internal/json"
+	"github.com/wxsatellite/goweb/framework/gin/internal/bytesconv"
+	"github.com/wxsatellite/goweb/framework/gin/internal/json"
 )
 
 // JSON contains the given interface object.
