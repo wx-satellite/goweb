@@ -1,7 +1,9 @@
 package main
 
-import "github.com/wxsatellite/goweb/framework"
+import (
+	"github.com/wxsatellite/goweb/framework/gin"
+)
 
-func registerRouter(core *framework.Core) {
-	core.Get("/foo", FooControllerHandler)
+func registerRouter(core *gin.Engine) {
+	core.GET("/foo", FooControllerHandler)
 }

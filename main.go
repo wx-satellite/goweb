@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
-	"github.com/wxsatellite/goweb/framework"
+	"github.com/wxsatellite/goweb/framework/gin"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 /**
@@ -24,31 +25,31 @@ SIGKILL  kill -9 不可捕获和处理，进程会被直接杀死
 */
 
 // 主goroutine 和 子goroutine 都是可以接收信号的，不过主goroutine中接收信号做收尾工作比较简单
-func main() {
-	core := framework.NewCore()
-	registerRouter(core)
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: core,
-	}
-	// 该 goroutine 负责启动服务
-	go func() {
-		_ = server.ListenAndServe()
-	}()
-
-	// main 所在的当前goroutine负责监听信号
-	quit := make(chan os.Signal)
-	// 监听指定信号
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	// 阻塞当前 goroutine，只能等到捕获到了信号才继续后续的流程
-	<-quit
-
-	// server.Shutdown 方法是个阻塞方法，一旦执行之后，它会阻塞当前 Goroutine，并且在所有连接请求都结束之后，才继续往后执行
-	if err := server.Shutdown(context.Background()); err != nil {
-		log.Fatal("Server Shutdown：", err)
-	}
-
-}
+//func main() {
+//	core := framework.NewCore()
+//	registerRouter(core)
+//	server := &http.Server{
+//		Addr:    ":8080",
+//		Handler: core,
+//	}
+//	// 该 goroutine 负责启动服务
+//	go func() {
+//		_ = server.ListenAndServe()
+//	}()
+//
+//	// main 所在的当前goroutine负责监听信号
+//	quit := make(chan os.Signal)
+//	// 监听指定信号
+//	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+//	// 阻塞当前 goroutine，只能等到捕获到了信号才继续后续的流程
+//	<-quit
+//
+//	// server.Shutdown 方法是个阻塞方法，一旦执行之后，它会阻塞当前 Goroutine，并且在所有连接请求都结束之后，才继续往后执行
+//	if err := server.Shutdown(context.Background()); err != nil {
+//		log.Fatal("Server Shutdown：", err)
+//	}
+//
+//}
 
 //func main() {
 //	http.HandleFunc("/haha", func(writer http.ResponseWriter, request *http.Request) {
@@ -62,3 +63,34 @@ func main() {
 //	})
 //	http.ListenAndServe(":8080", nil)
 //}
+
+func main() {
+	core := gin.New()
+	core.Use(gin.Recovery())
+
+	registerRouter(core)
+
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: core,
+	}
+
+	// 这个 goroutine 用于提供服务
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+
+	// 当前 goroutine 等待信号
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	// 阻塞当前 goroutine 等待信号
+	<-quit
+
+	// 最长等待5秒用来做安全退出
+	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(timeoutCtx); err != nil {
+		log.Fatal("Server Shutdown:", err)
+	}
+}
