@@ -22,6 +22,8 @@ type Container interface {
 	MakeNew(key string, params []interface{}) (interface{}, error)
 }
 
+var _ Container = (*GoWebContainer)(nil)
+
 type GoWebContainer struct {
 	Container
 
@@ -43,6 +45,8 @@ func NewGoWebContainer() *GoWebContainer {
 
 // Bind 绑定服务提供者
 func (c *GoWebContainer) Bind(provider ServiceProvider) (err error) {
+
+	// Bind 是全局的，不存在并发安全问题，因此读锁即可。但是 make 方法是请求级别的，因此存在并发问题
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 
