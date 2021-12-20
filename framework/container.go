@@ -33,10 +33,18 @@ type GoWebContainer struct {
 	lock sync.RWMutex
 }
 
+func NewGoWebContainer() *GoWebContainer {
+	return &GoWebContainer{
+		providers: make(map[string]ServiceProvider),
+		instances: make(map[string]interface{}),
+		lock:      sync.RWMutex{},
+	}
+}
+
 // Bind 绑定服务提供者
 func (c *GoWebContainer) Bind(provider ServiceProvider) (err error) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 
 	key := provider.Name()
 
@@ -80,38 +88,52 @@ func (c *GoWebContainer) IsBind(key string) bool {
 
 // findServiceProvider 获取服务提供者
 func (c *GoWebContainer) findServiceProvider(key string) (sp ServiceProvider) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 	sp, _ = c.providers[key]
 	return
 }
 
 // make 实例化操作
 func (c *GoWebContainer) make(key string, params []interface{}, forceNew bool) (res interface{}, err error) {
-	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	// 获取服务提供者
-	provider := c.findServiceProvider(key)
-	if provider == nil {
-		err = errors.New("contract " + key + " have not register")
-		return
-	}
-	if forceNew {
-		return c.newInstance(provider, params)
-	}
+	c.lock.RLock()
 
 	// 不强制重新初始化，就获取容器中存在的实例
 	res, ok := c.instances[key]
 	if ok {
+		c.lock.RUnlock()
 		return
 	}
+
+	// 获取服务提供者
+	provider := c.findServiceProvider(key)
+	if provider == nil {
+		c.lock.RUnlock()
+		err = errors.New("contract " + key + " have not register")
+		return
+	}
+	// 关闭读锁
+	c.lock.RUnlock()
+
+	// 加写锁，双重检查，在获得写锁之后，可能有别的协程已经创建完成，可以直接返回，避免再创建
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	res, ok = c.instances[key]
+	if ok {
+		return
+	}
+
+	if forceNew {
+		return c.newInstance(provider, params)
+	}
+
 	// 如果容器不存在就新增一个
 	newInstance, err := c.newInstance(provider, params)
 	if err != nil {
 		return
 	}
 	c.instances[key] = newInstance
+	res = newInstance
 	return
 }
 

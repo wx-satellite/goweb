@@ -1,4 +1,4 @@
-package framework
+package learning
 
 import "github.com/wxsatellite/goweb/framework/gin"
 

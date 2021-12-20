@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/wxsatellite/goweb/framework/gin"
+	"github.com/wxsatellite/goweb/provider/demo"
 	"log"
 	"net/http"
 	"os"
@@ -66,18 +67,22 @@ SIGKILL  kill -9 不可捕获和处理，进程会被直接杀死
 
 func main() {
 	core := gin.New()
+
+	// 注册服务
+	_ = core.Bind(&demo.ServiceProvider{})
 	core.Use(gin.Recovery())
 
 	registerRouter(core)
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    ":8082",
 		Handler: core,
 	}
 
 	// 这个 goroutine 用于提供服务
 	go func() {
 		_ = server.ListenAndServe()
+
 	}()
 
 	// 当前 goroutine 等待信号

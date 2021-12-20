@@ -7,6 +7,7 @@ package gin
 import (
 	"errors"
 	"fmt"
+	"github.com/wxsatellite/goweb/framework"
 	"io"
 	"io/ioutil"
 	"log"
@@ -56,7 +57,7 @@ type Context struct {
 	fullPath string
 
 	// 容器
-	container    Container
+	container    framework.Container
 	engine       *Engine
 	params       *Params
 	skippedNodes *[]skippedNode

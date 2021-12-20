@@ -1,4 +1,4 @@
-package framework
+package learning
 
 type IGroup interface {
 	Get(string, ...ControllerHandler)

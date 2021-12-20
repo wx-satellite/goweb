@@ -6,6 +6,7 @@ package gin
 
 import (
 	"fmt"
+	"github.com/wxsatellite/goweb/framework"
 	"html/template"
 	"net"
 	"net/http"
@@ -157,7 +158,7 @@ type Engine struct {
 	trustedCIDRs     []*net.IPNet
 
 	// 容器
-	container Container
+	container framework.Container
 }
 
 var _ IRouter = &Engine{}
@@ -196,7 +197,7 @@ func New() *Engine {
 		trustedCIDRs:           defaultTrustedCIDRs,
 
 		// 初始化容器
-		container: NewGoWebContainer(),
+		container: framework.NewGoWebContainer(),
 	}
 	engine.RouterGroup.engine = engine
 

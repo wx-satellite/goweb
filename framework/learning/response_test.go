@@ -1,4 +1,4 @@
-package framework
+package learning
 
 import (
 	"fmt"

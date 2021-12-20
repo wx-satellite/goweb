@@ -1,8 +1,10 @@
 package gin
 
+import "github.com/wxsatellite/goweb/framework"
+
 // Engine 负责在容器中绑定服务提供者，Context 负责从容器中获取服务提供者
 
-func (engine *Engine) Bind(provider ServiceProvider) error {
+func (engine *Engine) Bind(provider framework.ServiceProvider) error {
 	return engine.container.Bind(provider)
 }
 
