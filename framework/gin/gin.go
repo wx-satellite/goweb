@@ -155,6 +155,9 @@ type Engine struct {
 	maxSections      uint16
 	trustedProxies   []string
 	trustedCIDRs     []*net.IPNet
+
+	// 容器
+	container Container
 }
 
 var _ IRouter = &Engine{}
@@ -191,8 +194,13 @@ func New() *Engine {
 		secureJSONPrefix:       "while(1);",
 		trustedProxies:         []string{"0.0.0.0/0"},
 		trustedCIDRs:           defaultTrustedCIDRs,
+
+		// 初始化容器
+		container: NewGoWebContainer(),
 	}
 	engine.RouterGroup.engine = engine
+
+	// gin 创建 context
 	engine.pool.New = func() interface{} {
 		return engine.allocateContext()
 	}
@@ -210,7 +218,7 @@ func Default() *Engine {
 func (engine *Engine) allocateContext() *Context {
 	v := make(Params, 0, engine.maxParams)
 	skippedNodes := make([]skippedNode, 0, engine.maxSections)
-	return &Context{engine: engine, params: &v, skippedNodes: &skippedNodes}
+	return &Context{engine: engine, params: &v, skippedNodes: &skippedNodes, container: engine.container}
 }
 
 // Delims sets template left and right delims and returns an Engine instance.

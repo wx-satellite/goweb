@@ -55,6 +55,8 @@ type Context struct {
 	index    int8
 	fullPath string
 
+	// 容器
+	container    Container
 	engine       *Engine
 	params       *Params
 	skippedNodes *[]skippedNode
