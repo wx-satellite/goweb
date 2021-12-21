@@ -1,14 +1,11 @@
 package main
 
 import (
-	"context"
-	"github.com/wxsatellite/goweb/framework/gin"
-	"log"
-	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
+	"github.com/wxsatellite/goweb/app/console"
+	"github.com/wxsatellite/goweb/app/http"
+	"github.com/wxsatellite/goweb/framework"
+	"github.com/wxsatellite/goweb/framework/provider/app"
+	"github.com/wxsatellite/goweb/framework/provider/kernel"
 )
 
 /**
@@ -64,35 +61,51 @@ SIGKILL  kill -9 不可捕获和处理，进程会被直接杀死
 //	http.ListenAndServe(":8080", nil)
 //}
 
+//func m() {
+//	core := gin.New()
+//	// 注册服务
+//	core.Use(gin.Recovery())
+//
+//	registerRouter(core)
+//
+//	server := &http.Server{
+//		Addr:    ":8082",
+//		Handler: core,
+//	}
+//
+//	// 这个 goroutine 用于提供服务
+//	go func() {
+//		_ = server.ListenAndServe()
+//
+//	}()
+//
+//	// 当前 goroutine 等待信号
+//	quit := make(chan os.Signal)
+//	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+//	// 阻塞当前 goroutine 等待信号
+//	<-quit
+//
+//	// 最长等待5秒用来做安全退出
+//	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+//	defer cancel()
+//
+//	if err := server.Shutdown(timeoutCtx); err != nil {
+//		log.Fatal("Server Shutdown:", err)
+//	}
+//}
+
 func main() {
-	core := gin.New()
-	// 注册服务
-	core.Use(gin.Recovery())
+	container := framework.NewGoWebContainer()
 
-	registerRouter(core)
+	// 绑定应用目录服务
+	_ = container.Bind(&app.Provider{})
 
-	server := &http.Server{
-		Addr:    ":8082",
-		Handler: core,
+	// 这个 Web 引擎不仅仅是调用了 Gin 创建 Web 引擎的方法，更重要的是需要注册业务的路由
+	// 所以 http.NewHttpEngine 这个创建 Web 引擎的方法必须放在业务层，不能放在框架中
+	if engine, err := http.NewHttpEngine(); err == nil {
+		_ = container.Bind(&kernel.Provider{Engine: engine})
 	}
 
-	// 这个 goroutine 用于提供服务
-	go func() {
-		_ = server.ListenAndServe()
-
-	}()
-
-	// 当前 goroutine 等待信号
-	quit := make(chan os.Signal)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	// 阻塞当前 goroutine 等待信号
-	<-quit
-
-	// 最长等待5秒用来做安全退出
-	timeoutCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := server.Shutdown(timeoutCtx); err != nil {
-		log.Fatal("Server Shutdown:", err)
-	}
+	// 运行根command
+	_ = console.RunCommand(container)
 }

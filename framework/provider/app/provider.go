@@ -23,5 +23,5 @@ func (*Provider) Boot(container framework.Container) error {
 }
 
 func (*Provider) Name() string {
-	return AppKey
+	return Key
 }
