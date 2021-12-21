@@ -2,14 +2,10 @@ package main
 
 import (
 	"github.com/wxsatellite/goweb/framework/gin"
-	"github.com/wxsatellite/goweb/provider/demo"
 )
 
 func FooControllerHandler(ctx *gin.Context) {
-	// 从context中获取服务
-	demoService := ctx.MustMake(demo.Key).(demo.IService)
 
-	demoService.SayHello()
 	return
 }
 

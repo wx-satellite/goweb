@@ -6,4 +6,5 @@ import (
 
 func registerRouter(core *gin.Engine) {
 	core.GET("/foo", FooControllerHandler)
+
 }

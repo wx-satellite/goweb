@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/wxsatellite/goweb/framework/gin"
-	"github.com/wxsatellite/goweb/provider/demo"
 	"log"
 	"net/http"
 	"os"
@@ -67,9 +66,7 @@ SIGKILL  kill -9 不可捕获和处理，进程会被直接杀死
 
 func main() {
 	core := gin.New()
-
 	// 注册服务
-	_ = core.Bind(&demo.ServiceProvider{})
 	core.Use(gin.Recovery())
 
 	registerRouter(core)

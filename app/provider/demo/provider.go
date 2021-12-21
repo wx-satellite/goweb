@@ -22,6 +22,7 @@ func (*ServiceProvider) IsDefer() bool {
 
 func (*ServiceProvider) Boot(container framework.Container) error {
 	fmt.Println("demo service boot")
+
 	return nil
 }
 
