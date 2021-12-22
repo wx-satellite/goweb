@@ -7,5 +7,5 @@ func (c *Command) SetContainer(container framework.Container) {
 }
 
 func (c *Command) Container() framework.Container {
-	return c.container
+	return c.Root().container
 }

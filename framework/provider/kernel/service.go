@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/wxsatellite/goweb/framework"
 	"github.com/wxsatellite/goweb/framework/gin"
+	"net/http"
 )
 
 type Service struct {
@@ -20,6 +21,6 @@ func New(params ...interface{}) (interface{}, error) {
 	return &Service{engine: engine, container: container}, nil
 }
 
-func (s *Service) Engine() *gin.Engine {
+func (s *Service) Engine() http.Handler {
 	return s.engine
 }
