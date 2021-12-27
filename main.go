@@ -109,3 +109,8 @@ func main() {
 	// 运行根command
 	_ = console.RunCommand(container)
 }
+
+//func main() {
+//	gspt.SetProcTitle("hade cron")
+//	time.Sleep(100 * time.Minute)
+//}

@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"github.com/wxsatellite/goweb/framework"
 	"io"
 	"os"
@@ -40,6 +41,11 @@ type Command struct {
 
 	// 服务容器
 	container framework.Container
+
+	// 用于执行定时命令：业务在开发过程中，不可能每个命令都要手动操作，定时执行某个命令的需求应该是非常普遍的。
+	Cron *cron.Cron
+	// 用于保存所有的 Cron 命令的信息，为后续查看所有的定时任务而准备
+	CronSpecs []CronSpec
 
 	// Use is the one-line usage message.
 	// Recommended syntax is as follow:
