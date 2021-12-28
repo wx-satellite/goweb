@@ -3,6 +3,7 @@ package app
 import (
 	"errors"
 	"flag"
+	"github.com/google/uuid"
 	"github.com/wxsatellite/goweb/framework"
 	"github.com/wxsatellite/goweb/framework/utils"
 	"path/filepath"
@@ -12,6 +13,8 @@ type Service struct {
 	container framework.Container // 服务容器
 
 	baseFolder string // 基础路径：框架定义了业务目录最基本的几个路径，通过基础路径拼接可以获取到对应的目录路径
+
+	appId string
 }
 
 func New(params ...interface{}) (interface{}, error) {
@@ -20,7 +23,8 @@ func New(params ...interface{}) (interface{}, error) {
 	}
 	container := params[0].(framework.Container)
 	baseFolder := params[1].(string)
-	return &Service{container: container, baseFolder: baseFolder}, nil
+	// appId 为每一个应用的唯一标记，用于分布式锁
+	return &Service{container: container, baseFolder: baseFolder, appId: uuid.New().String()}, nil
 }
 
 func (*Service) Version() string {
@@ -92,4 +96,9 @@ func (s *Service) RuntimeFolder() string {
 // TestFolder 定义测试需要的信息
 func (s *Service) TestFolder() string {
 	return filepath.Join(s.BaseFolder(), "test")
+}
+
+// AppId app的唯一标志
+func (s *Service) AppId() string {
+	return s.appId
 }

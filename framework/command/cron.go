@@ -72,6 +72,7 @@ var cronStartCommand = &cobra.Command{
 		currentFolder := appService.BaseFolder()
 
 		// 守护进程的方式启动定时脚本
+		// TODO：当开启多个子进程cron时会存在问题，pid文件、日志文件会相互覆盖（路径都一样），简单的处理方式就是每一个子进程的文件都不一样，引入app_id，并且将文件路径设置到子进程的环境变量中
 		if cronDaemon {
 			ctx := &daemon.Context{
 				// 设置pid文件及权限
@@ -89,6 +90,8 @@ var cronStartCommand = &cobra.Command{
 
 				// 子进程的参数，按照这个参数设置，子进程的命令为 ./goweb cron start --daemon=true
 				Args: []string{"", "cron", "start", "--daemon=true"},
+
+				Env: []string{}, // 设置环境变量
 			}
 			// 启动子进程，d不为空表示当前是父进程，d为空表示当前是子进程
 			d, err := ctx.Reborn()
