@@ -108,10 +108,13 @@ var cronStartCommand = &cobra.Command{
 				return nil
 			}
 
-			// d == nil 即为子进程，那么启动定时脚本
+			/* d == nil 即为子进程，那么启动定时脚本 */
+
+			// 退出时，释放资源
 			defer d.Release()
 			fmt.Println("daemon started")
 			gspt.SetProcTitle("goweb cron")
+			// 会阻塞
 			cmd.Root().Cron.Start()
 			return nil
 		}
