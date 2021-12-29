@@ -5,6 +5,7 @@ import (
 	"github.com/wxsatellite/goweb/app/http"
 	"github.com/wxsatellite/goweb/framework"
 	"github.com/wxsatellite/goweb/framework/provider/app"
+	"github.com/wxsatellite/goweb/framework/provider/distributed"
 	"github.com/wxsatellite/goweb/framework/provider/kernel"
 )
 
@@ -99,13 +100,13 @@ func main() {
 
 	// 绑定应用目录服务
 	_ = container.Bind(&app.Provider{})
+	_ = container.Bind(&distributed.LocalProvider{})
 
 	// 这个 Web 引擎不仅仅是调用了 Gin 创建 Web 引擎的方法，更重要的是需要注册业务的路由
 	// 所以 http.NewHttpEngine 这个创建 Web 引擎的方法必须放在业务层，不能放在框架中
 	if engine, err := http.NewHttpEngine(); err == nil {
 		_ = container.Bind(&kernel.Provider{Engine: engine})
 	}
-
 	// 运行根command
 	_ = console.RunCommand(container)
 }

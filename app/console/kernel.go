@@ -1,7 +1,6 @@
 package console
 
 import (
-	"fmt"
 	"github.com/wxsatellite/goweb/app/console/command/demo"
 	"github.com/wxsatellite/goweb/framework"
 	"github.com/wxsatellite/goweb/framework/cobra"
@@ -18,7 +17,6 @@ func RunCommand(container framework.Container) (err error) {
 		Short: "goweb 命令",
 		Long:  "goweb 框架提供的命令行工具，使用这个命令行工具能很方便执行框架自带命令，也能很方便编写业务命令",
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			fmt.Println(args)
 			return cmd.Help()
 		},
 		//Args: cobra.ExactArgs(1),
