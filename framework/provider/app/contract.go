@@ -28,4 +28,7 @@ type App interface {
 
 	// AppId 表示当前app的唯一id，用于分布式锁
 	AppId() string
+
+	// LoadAppConfig 根据配置文件更新默认目录路径
+	LoadAppConfig(kv map[string]string)
 }

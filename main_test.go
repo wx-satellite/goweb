@@ -1,11 +1,12 @@
 package main
 
 import (
-	"log"
+	"fmt"
+	"path/filepath"
 	"testing"
 )
 
 func Test(t *testing.T) {
-	log.Println("666")
+	fmt.Println(filepath.Abs("1.txt"))
 	return
 }

@@ -1,0 +1,4 @@
+path:
+  log_folder: "/Users/weixin/Desktop/goweb/storage/log/"
+  runtime_folder: "/Users/weixin/Desktop/goweb/storage/runtime/test"
+  name: "wx"

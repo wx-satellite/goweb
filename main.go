@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"github.com/wxsatellite/goweb/app/console"
 	"github.com/wxsatellite/goweb/app/http"
 	"github.com/wxsatellite/goweb/framework"
 	"github.com/wxsatellite/goweb/framework/provider/app"
+	"github.com/wxsatellite/goweb/framework/provider/config"
 	"github.com/wxsatellite/goweb/framework/provider/distributed"
+	"github.com/wxsatellite/goweb/framework/provider/env"
 	"github.com/wxsatellite/goweb/framework/provider/kernel"
+	"time"
 )
 
 /**
@@ -99,8 +103,10 @@ func main() {
 	container := framework.NewGoWebContainer()
 
 	// 绑定应用目录服务
-	_ = container.Bind(&app.Provider{})
-	_ = container.Bind(&distributed.LocalProvider{})
+	fmt.Println(container.Bind(&app.Provider{}))
+	fmt.Println(container.Bind(&distributed.LocalProvider{}))
+	fmt.Println(container.Bind(&env.Provider{}))
+	fmt.Println(container.Bind(&config.Provider{}))
 
 	// 这个 Web 引擎不仅仅是调用了 Gin 创建 Web 引擎的方法，更重要的是需要注册业务的路由
 	// 所以 http.NewHttpEngine 这个创建 Web 引擎的方法必须放在业务层，不能放在框架中
@@ -109,6 +115,8 @@ func main() {
 	}
 	// 运行根command
 	_ = console.RunCommand(container)
+
+	time.Sleep(time.Hour)
 }
 
 //func main() {

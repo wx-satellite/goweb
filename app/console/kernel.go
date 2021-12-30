@@ -26,6 +26,7 @@ func RunCommand(container framework.Container) (err error) {
 		//  	completion  generate the autocompletion script for the specified shell
 		CompletionOptions: cobra.CompletionOptions{DisableDefaultCmd: true},
 	}
+
 	// 为根 command 设置容器
 	rootCommand.SetContainer(container)
 	// 绑定框架的命令
