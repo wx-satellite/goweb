@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"path/filepath"
+	"log"
 	"testing"
 )
 
 func Test(t *testing.T) {
-	fmt.Println(filepath.Abs("1.txt"))
+
+	log.Panicln(111)
 	return
 }
