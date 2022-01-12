@@ -44,5 +44,6 @@ func Test(t *testing.T) {
 	body, _ := ioutil.ReadAll(response.Body)
 	fmt.Println(response.Status)
 	fmt.Println(string(body))
+
 	return
 }
